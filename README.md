@@ -19,7 +19,9 @@ Copia `.env.example` a `.env` y ajusta las variables necesarias:
 ```env
 PORT=4000
 MONGODB_URI=mongodb://127.0.0.1:27017/restaurant_menu
+MONGODB_SERVER_SELECTION_TIMEOUT_MS=10000
 JWT_SECRET=change-this-secret-before-production
+LOG_FORMAT=text
 CLIENT_URL=http://localhost:5173
 PUBLIC_MENU_URL=http://localhost:5173/menu
 ```
@@ -54,6 +56,13 @@ Configuracion recomendada:
 - Start Command: `npm start`
 
 El script `postinstall` ejecuta `npm run build`, por lo que Render genera `dist/server.js` durante la instalacion.
+
+Si el deploy falla con `MongooseServerSelectionError`, revisa:
+
+- `MONGODB_URI` en las variables de entorno de Render.
+- Usuario y password de base de datos en MongoDB Atlas.
+- Atlas > Network Access con los outbound IPs de Render o, para una prueba rapida, `0.0.0.0/0`.
+- `LOG_FORMAT=json` si quieres logs estructurados para filtrar mejor en Render.
 
 ## Usuario inicial
 

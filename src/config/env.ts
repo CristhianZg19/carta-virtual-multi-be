@@ -11,8 +11,10 @@ export const env = {
   nodeEnv: process.env.NODE_ENV ?? "development",
   port: toNumber(process.env.PORT, 4000),
   mongoUri: process.env.MONGODB_URI ?? "mongodb://127.0.0.1:27017/restaurant_menu",
+  mongoServerSelectionTimeoutMs: toNumber(process.env.MONGODB_SERVER_SELECTION_TIMEOUT_MS, 10_000),
   jwtSecret: process.env.JWT_SECRET ?? "development-secret",
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "7d",
+  logFormat: process.env.LOG_FORMAT ?? "text",
   clientUrl: process.env.CLIENT_URL ?? "http://localhost:5173",
   publicMenuUrl: process.env.PUBLIC_MENU_URL ?? "http://localhost:5173/menu",
   gcpImagesBaseUrl:

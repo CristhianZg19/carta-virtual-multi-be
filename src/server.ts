@@ -1,15 +1,25 @@
 import { app } from "./app";
 import { connectDatabase } from "./config/database";
 import { env } from "./config/env";
+import { logger, redactConnectionString } from "./utils/logger";
 
 const start = async () => {
   try {
+    logger.info("Starting API", {
+      nodeEnv: env.nodeEnv,
+      port: env.port,
+      clientUrl: env.clientUrl,
+      publicMenuUrl: env.publicMenuUrl,
+      mongoUri: redactConnectionString(env.mongoUri),
+      logFormat: env.logFormat,
+    });
+
     await connectDatabase();
     app.listen(env.port, () => {
-      console.log(`API running at http://localhost:${env.port}`);
+      logger.info("API listening", { url: `http://localhost:${env.port}` });
     });
   } catch (error) {
-    console.error("Unable to start API", error);
+    logger.error("Unable to start API", error);
     process.exit(1);
   }
 };
