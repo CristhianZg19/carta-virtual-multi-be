@@ -1,6 +1,6 @@
 import { Dish, type IDish } from "../models/dish.model";
 import { AppError } from "../utils/errors";
-import { resolveImageUrl } from "../utils/images";
+import { resolveDishImageUrl } from "../utils/images";
 import { getPagination, getPaginationMeta } from "../utils/pagination";
 
 interface DishQuery {
@@ -30,7 +30,7 @@ const serializeDish = (dish: IDish) => {
   return {
     ...item,
     id: dish._id.toString(),
-    imageUrl: resolveImageUrl(dish.image),
+    imageUrl: resolveDishImageUrl(dish.image),
   };
 };
 

@@ -14,24 +14,29 @@ const extensionByMimeType: Record<string, string> = {
 
 const cleanPrefix = (value: string) => value.replace(/^\/+|\/+$/g, "");
 
-const filenameFrom = (file: Express.Multer.File) => {
-  const originalName = path.parse(file.originalname).name || "plato";
-  const slug = slugify(originalName, { lower: true, strict: true }) || "plato";
+const filenameFrom = (file: Express.Multer.File, fallbackName: string) => {
+  const originalName = path.parse(file.originalname).name || fallbackName;
+  const slug = slugify(originalName, { lower: true, strict: true }) || fallbackName;
   const extension = extensionByMimeType[file.mimetype] ?? path.extname(file.originalname);
   return `${slug}-${crypto.randomUUID()}${extension}`;
 };
 
 export const uploadService = {
-  async uploadDishImage(file?: Express.Multer.File) {
+  async uploadImage(options: {
+    file?: Express.Multer.File;
+    prefix: string;
+    fallbackName: string;
+  }) {
+    const { file, prefix, fallbackName } = options;
     if (!file) throw new AppError("Selecciona una imagen", 400);
 
     if (!env.gcpStorageBucket) {
       throw new AppError("Bucket de Google Cloud no configurado", 500);
     }
 
-    const filename = filenameFrom(file);
-    const prefix = cleanPrefix(env.gcpImagesPrefix);
-    const objectName = prefix ? `${prefix}/${filename}` : filename;
+    const filename = filenameFrom(file, fallbackName);
+    const cleanObjectPrefix = cleanPrefix(prefix);
+    const objectName = cleanObjectPrefix ? `${cleanObjectPrefix}/${filename}` : filename;
 
     await storage
       .bucket(env.gcpStorageBucket)
@@ -51,5 +56,21 @@ export const uploadService = {
       contentType: file.mimetype,
       size: file.size,
     };
+  },
+
+  async uploadDishImage(file?: Express.Multer.File) {
+    return this.uploadImage({
+      file,
+      prefix: env.gcpImagesPrefix,
+      fallbackName: "plato",
+    });
+  },
+
+  async uploadRestaurantLogo(file?: Express.Multer.File) {
+    return this.uploadImage({
+      file,
+      prefix: env.gcpLogosPrefix,
+      fallbackName: "logo",
+    });
   },
 };

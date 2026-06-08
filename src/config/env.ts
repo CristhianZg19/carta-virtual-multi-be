@@ -25,8 +25,12 @@ export const env = {
   gcpImagesBaseUrl:
     process.env.GCP_IMAGES_BASE_URL ??
     "https://storage.googleapis.com/matrimonioxd/platos",
+  gcpLogosBaseUrl:
+    process.env.GCP_LOGOS_BASE_URL ??
+    "https://storage.googleapis.com/matrimonioxd/logos",
   gcpStorageBucket: process.env.GCP_STORAGE_BUCKET ?? "matrimonioxd",
   gcpImagesPrefix: process.env.GCP_IMAGES_PREFIX ?? "platos",
+  gcpLogosPrefix: process.env.GCP_LOGOS_PREFIX ?? "logos",
   gcpProjectId: process.env.GCP_PROJECT_ID ?? "",
   gcpCredentialsJson: process.env.GCP_CREDENTIALS_JSON,
   autoSeedAdmin: toBoolean(process.env.AUTO_SEED_ADMIN),

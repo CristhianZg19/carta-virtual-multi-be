@@ -1,6 +1,6 @@
 import { Restaurant } from "../models/restaurant.model";
 import { AppError } from "../utils/errors";
-import { resolveImageUrl } from "../utils/images";
+import { resolveRestaurantLogoUrl } from "../utils/images";
 
 const defaultRestaurant = {
   name: "Casa Aurora",
@@ -49,12 +49,12 @@ export const restaurantService = {
     const restaurant = await Restaurant.findOne().sort({ createdAt: 1 });
     if (restaurant) {
       const item = restaurant.toObject();
-      return { ...item, id: restaurant._id.toString(), logoUrl: resolveImageUrl(restaurant.logo) };
+      return { ...item, id: restaurant._id.toString(), logoUrl: resolveRestaurantLogoUrl(restaurant.logo) };
     }
 
     const created = await Restaurant.create(defaultRestaurant);
     const item = created.toObject();
-    return { ...item, id: created._id.toString(), logoUrl: resolveImageUrl(created.logo) };
+    return { ...item, id: created._id.toString(), logoUrl: resolveRestaurantLogoUrl(created.logo) };
   },
 
   async update(payload: RestaurantPayload) {
@@ -67,6 +67,6 @@ export const restaurantService = {
 
     if (!restaurant) throw new AppError("Restaurante no encontrado", 404);
     const item = restaurant.toObject();
-    return { ...item, id: restaurant._id.toString(), logoUrl: resolveImageUrl(restaurant.logo) };
+    return { ...item, id: restaurant._id.toString(), logoUrl: resolveRestaurantLogoUrl(restaurant.logo) };
   },
 };

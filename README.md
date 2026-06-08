@@ -25,8 +25,10 @@ LOG_FORMAT=text
 CLIENT_URL=http://localhost:5173
 PUBLIC_MENU_URL=http://localhost:5173/menu
 GCP_IMAGES_BASE_URL=https://storage.googleapis.com/matrimonioxd/platos
+GCP_LOGOS_BASE_URL=https://storage.googleapis.com/matrimonioxd/logos
 GCP_STORAGE_BUCKET=matrimonioxd
 GCP_IMAGES_PREFIX=platos
+GCP_LOGOS_PREFIX=logos
 GCP_PROJECT_ID=hale-skill-452420-j6
 GCP_CREDENTIALS_JSON=
 AUTO_SEED_ADMIN=false
@@ -65,6 +67,7 @@ La API queda disponible en `http://localhost:4000/api`.
 ## Imagenes
 
 - `POST /api/uploads/dish-image`: sube una imagen de plato a Google Cloud Storage.
+- `POST /api/uploads/restaurant-logo`: sube el logo del restaurante a Google Cloud Storage.
 - Campo multipart: `image`.
 - Tipos permitidos: JPG, PNG, WebP y GIF.
 - Tamano maximo: 8 MB.

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import multer from "multer";
-import { uploadDishImage } from "../controllers/upload.controller";
+import { uploadDishImage, uploadRestaurantLogo } from "../controllers/upload.controller";
 import { authenticate, authorize } from "../middlewares/auth.middleware";
 import { AppError } from "../utils/errors";
 
@@ -29,4 +29,12 @@ uploadRoutes.post(
   authorize("ADMIN", "STAFF"),
   upload.single("image"),
   uploadDishImage,
+);
+
+uploadRoutes.post(
+  "/restaurant-logo",
+  authenticate,
+  authorize("ADMIN", "STAFF"),
+  upload.single("image"),
+  uploadRestaurantLogo,
 );
