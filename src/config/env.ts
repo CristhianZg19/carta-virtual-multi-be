@@ -24,7 +24,11 @@ export const env = {
   publicMenuUrl: process.env.PUBLIC_MENU_URL ?? "http://localhost:5173/menu",
   gcpImagesBaseUrl:
     process.env.GCP_IMAGES_BASE_URL ??
-    "https://storage.googleapis.com/bucket-name/restaurant/platos",
+    "https://storage.googleapis.com/matrimonioxd/platos",
+  gcpStorageBucket: process.env.GCP_STORAGE_BUCKET ?? "matrimonioxd",
+  gcpImagesPrefix: process.env.GCP_IMAGES_PREFIX ?? "platos",
+  gcpProjectId: process.env.GCP_PROJECT_ID ?? "",
+  gcpCredentialsJson: process.env.GCP_CREDENTIALS_JSON,
   autoSeedAdmin: toBoolean(process.env.AUTO_SEED_ADMIN),
   adminSeedName: process.env.ADMIN_SEED_NAME ?? "Administrador",
   adminSeedEmail: process.env.ADMIN_SEED_EMAIL ?? "admin@restaurant.com",

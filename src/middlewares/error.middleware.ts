@@ -29,6 +29,14 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
     details = error.keyValue;
   }
 
+  if (error.name === "MulterError") {
+    statusCode = 400;
+    message =
+      error.code === "LIMIT_FILE_SIZE"
+        ? "La imagen no debe superar 8 MB"
+        : "No se pudo procesar la imagen";
+  }
+
   res.status(statusCode).json({
     success: false,
     message,

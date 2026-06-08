@@ -24,6 +24,11 @@ JWT_SECRET=change-this-secret-before-production
 LOG_FORMAT=text
 CLIENT_URL=http://localhost:5173
 PUBLIC_MENU_URL=http://localhost:5173/menu
+GCP_IMAGES_BASE_URL=https://storage.googleapis.com/matrimonioxd/platos
+GCP_STORAGE_BUCKET=matrimonioxd
+GCP_IMAGES_PREFIX=platos
+GCP_PROJECT_ID=hale-skill-452420-j6
+GCP_CREDENTIALS_JSON=
 AUTO_SEED_ADMIN=false
 ADMIN_SEED_EMAIL=admin@restaurant.com
 ADMIN_SEED_PASSWORD=Admin12345
@@ -56,6 +61,15 @@ La API queda disponible en `http://localhost:4000/api`.
 - `POST /api/auth/login`: inicia sesion.
 - `GET /api/auth/me`: obtiene el usuario autenticado.
 - `PUT /api/auth/password`: cambia la contrasena del usuario autenticado.
+
+## Imagenes
+
+- `POST /api/uploads/dish-image`: sube una imagen de plato a Google Cloud Storage.
+- Campo multipart: `image`.
+- Tipos permitidos: JPG, PNG, WebP y GIF.
+- Tamano maximo: 8 MB.
+
+En Render configura `GCP_CREDENTIALS_JSON` con el JSON de una service account con permisos de escritura sobre el bucket, o con ese mismo JSON en Base64.
 
 ## Render
 

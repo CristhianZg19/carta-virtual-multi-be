@@ -7,6 +7,7 @@ import { dishRoutes } from "./dish.routes";
 import { qrRoutes } from "./qr.routes";
 import { restaurantRoutes } from "./restaurant.routes";
 import { tableRoutes } from "./table.routes";
+import { uploadRoutes } from "./upload.routes";
 
 export const apiRoutes = Router();
 
@@ -22,3 +23,4 @@ apiRoutes.use("/tables", tableRoutes);
 apiRoutes.use("/restaurant", restaurantRoutes);
 apiRoutes.use("/qr", qrRoutes);
 apiRoutes.use("/dashboard", dashboardRoutes);
+apiRoutes.use("/uploads", uploadRoutes);
