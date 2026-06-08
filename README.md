@@ -24,6 +24,9 @@ JWT_SECRET=change-this-secret-before-production
 LOG_FORMAT=text
 CLIENT_URL=http://localhost:5173
 PUBLIC_MENU_URL=http://localhost:5173/menu
+AUTO_SEED_ADMIN=false
+ADMIN_SEED_EMAIL=admin@restaurant.com
+ADMIN_SEED_PASSWORD=Admin12345
 ```
 
 ## Instalacion
@@ -63,6 +66,18 @@ Si el deploy falla con `MongooseServerSelectionError`, revisa:
 - Usuario y password de base de datos en MongoDB Atlas.
 - Atlas > Network Access con los outbound IPs de Render o, para una prueba rapida, `0.0.0.0/0`.
 - `LOG_FORMAT=json` si quieres logs estructurados para filtrar mejor en Render.
+
+Para crear el usuario administrador en Render, agrega temporalmente:
+
+```env
+AUTO_SEED_ADMIN=true
+ADMIN_SEED_NAME=Administrador
+ADMIN_SEED_EMAIL=admin@restaurant.com
+ADMIN_SEED_PASSWORD=Admin12345
+```
+
+Haz redeploy. Cuando el log muestre `Admin seed user created`, puedes volver `AUTO_SEED_ADMIN=false`.
+Si necesitas resetear la clave de un admin existente, usa tambien `ADMIN_SEED_RESET_PASSWORD=true` durante un redeploy y luego apagalo.
 
 ## Usuario inicial
 

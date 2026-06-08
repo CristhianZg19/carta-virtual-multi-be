@@ -7,6 +7,11 @@ const toNumber = (value: string | undefined, fallback: number) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const toBoolean = (value: string | undefined, fallback = false) => {
+  if (value === undefined) return fallback;
+  return ["1", "true", "yes", "on"].includes(value.toLowerCase());
+};
+
 export const env = {
   nodeEnv: process.env.NODE_ENV ?? "development",
   port: toNumber(process.env.PORT, 4000),
@@ -20,9 +25,11 @@ export const env = {
   gcpImagesBaseUrl:
     process.env.GCP_IMAGES_BASE_URL ??
     "https://storage.googleapis.com/bucket-name/restaurant/platos",
+  autoSeedAdmin: toBoolean(process.env.AUTO_SEED_ADMIN),
   adminSeedName: process.env.ADMIN_SEED_NAME ?? "Administrador",
   adminSeedEmail: process.env.ADMIN_SEED_EMAIL ?? "admin@restaurant.com",
   adminSeedPassword: process.env.ADMIN_SEED_PASSWORD ?? "Admin12345",
+  adminSeedResetPassword: toBoolean(process.env.ADMIN_SEED_RESET_PASSWORD),
 };
 
 export const isProduction = env.nodeEnv === "production";
