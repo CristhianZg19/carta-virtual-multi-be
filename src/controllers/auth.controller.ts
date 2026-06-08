@@ -1,0 +1,13 @@
+import { authService } from "../services/auth.service";
+import { asyncHandler } from "../utils/asyncHandler";
+import { sendSuccess } from "../utils/apiResponse";
+
+export const login = asyncHandler(async (req, res) => {
+  const result = await authService.login(req.body.email, req.body.password);
+  return sendSuccess(res, 200, "Sesion iniciada correctamente", result);
+});
+
+export const me = asyncHandler(async (req, res) => {
+  const user = await authService.me(req.user!.id);
+  return sendSuccess(res, 200, "Usuario autenticado", user);
+});
