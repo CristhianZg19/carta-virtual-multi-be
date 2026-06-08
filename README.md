@@ -46,6 +46,15 @@ La API queda disponible en `http://localhost:4000/api`.
 - `npm run start`: ejecuta la API compilada.
 - `npm run seed`: crea datos iniciales.
 
+## Render
+
+Configuracion recomendada:
+
+- Build Command: `npm install`
+- Start Command: `npm start`
+
+El script `postinstall` ejecuta `npm run build`, por lo que Render genera `dist/server.js` durante la instalacion.
+
 ## Usuario inicial
 
 - Email: `admin@restaurant.com`
