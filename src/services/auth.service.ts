@@ -45,4 +45,20 @@ export const authService = {
 
     return publicUser(user);
   },
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const user = await User.findById(userId).select("+password");
+    if (!user || !user.isActive) {
+      throw new AppError("Usuario no encontrado", 404);
+    }
+
+    if (!(await user.comparePassword(currentPassword))) {
+      throw new AppError("Contrasena actual incorrecta", 400);
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    return publicUser(user);
+  },
 };

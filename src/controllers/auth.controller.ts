@@ -11,3 +11,12 @@ export const me = asyncHandler(async (req, res) => {
   const user = await authService.me(req.user!.id);
   return sendSuccess(res, 200, "Usuario autenticado", user);
 });
+
+export const changePassword = asyncHandler(async (req, res) => {
+  const user = await authService.changePassword(
+    req.user!.id,
+    req.body.currentPassword,
+    req.body.newPassword,
+  );
+  return sendSuccess(res, 200, "Contrasena actualizada", user);
+});

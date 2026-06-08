@@ -51,6 +51,12 @@ La API queda disponible en `http://localhost:4000/api`.
 - `npm run start`: ejecuta la API compilada.
 - `npm run seed`: crea datos iniciales.
 
+## Endpoints de auth
+
+- `POST /api/auth/login`: inicia sesion.
+- `GET /api/auth/me`: obtiene el usuario autenticado.
+- `PUT /api/auth/password`: cambia la contrasena del usuario autenticado.
+
 ## Render
 
 Configuracion recomendada:

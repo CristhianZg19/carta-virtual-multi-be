@@ -6,3 +6,15 @@ export const loginSchema = z.object({
     password: z.string().min(8, "La contrasena debe tener al menos 8 caracteres"),
   }),
 });
+
+export const changePasswordSchema = z.object({
+  body: z
+    .object({
+      currentPassword: z.string().min(8, "La contrasena actual debe tener al menos 8 caracteres"),
+      newPassword: z.string().min(8, "La nueva contrasena debe tener al menos 8 caracteres"),
+    })
+    .refine((data) => data.currentPassword !== data.newPassword, {
+      message: "La nueva contrasena debe ser diferente",
+      path: ["newPassword"],
+    }),
+});
