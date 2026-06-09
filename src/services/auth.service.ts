@@ -6,8 +6,8 @@ import { AppError } from "../utils/errors";
 import { normalizeRestaurantSlug } from "../utils/restaurant";
 
 const findRestaurantForUser = async (user: IUser) => {
-  const restaurant = await Restaurant.findById(user.restaurantId);
-  if (!restaurant) throw new AppError("Restaurante no encontrado", 404);
+  const restaurant = await Restaurant.findOne({ _id: user.restaurantId, isActive: true });
+  if (!restaurant) throw new AppError("Empresa no disponible", 403);
   return restaurant;
 };
 

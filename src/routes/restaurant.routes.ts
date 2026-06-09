@@ -11,7 +11,7 @@ restaurantRoutes.get("/", authenticateOptional, resolveRestaurantScope({ require
 restaurantRoutes.put(
   "/",
   authenticate,
-  resolveRestaurantScope({ allowInactive: true }),
+  resolveRestaurantScope(),
   authorize("ADMIN"),
   validate(updateRestaurantSchema),
   updateRestaurant,

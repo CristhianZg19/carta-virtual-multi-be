@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { idParamSchema } from "./common.validator";
 
 const password = z.string().min(8, "La contrasena debe tener al menos 8 caracteres");
 
@@ -39,5 +40,11 @@ export const createCompanySchema = z.object({
       email: z.string().email("Email invalido"),
       password,
     }),
+  }),
+});
+
+export const updateCompanyStatusSchema = idParamSchema.extend({
+  body: z.object({
+    isActive: z.boolean(),
   }),
 });

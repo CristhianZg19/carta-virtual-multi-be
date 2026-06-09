@@ -21,6 +21,16 @@ export const changeCreatorPassword = asyncHandler(async (req, res) => {
   return sendSuccess(res, 200, "Contrasena actualizada", user);
 });
 
+export const listCompanies = asyncHandler(async (_req, res) => {
+  const companies = await creatorService.listCompanies();
+  return sendSuccess(res, 200, "Empresas obtenidas", companies);
+});
+
+export const updateCompanyStatus = asyncHandler(async (req, res) => {
+  const company = await creatorService.updateCompanyStatus(req.params.id, req.body.isActive);
+  return sendSuccess(res, 200, "Estado de empresa actualizado", company);
+});
+
 export const createCompany = asyncHandler(async (req, res) => {
   const company = await creatorService.createCompany(req.body);
   return sendSuccess(res, 201, "Empresa creada", company);

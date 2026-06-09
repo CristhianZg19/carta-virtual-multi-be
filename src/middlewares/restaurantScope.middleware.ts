@@ -24,13 +24,11 @@ export const resolveRestaurantScope =
       const required = options.required ?? true;
       const slug = getRestaurantSlug(req);
       const filter: Record<string, unknown> = {};
-      let fromAuthenticatedUser = false;
 
       if (slug) {
         filter.slug = slug;
       } else if (req.user?.restaurantId) {
         filter._id = req.user.restaurantId;
-        fromAuthenticatedUser = true;
       } else if (!required) {
         next();
         return;
@@ -38,7 +36,7 @@ export const resolveRestaurantScope =
         throw new AppError("Restaurante requerido", 400);
       }
 
-      if (!options.allowInactive && !fromAuthenticatedUser) {
+      if (!options.allowInactive) {
         filter.isActive = true;
       }
 

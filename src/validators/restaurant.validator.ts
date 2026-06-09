@@ -27,6 +27,5 @@ export const updateRestaurantSchema = z.object({
       })
       .partial()
       .optional(),
-    isActive: z.boolean().optional(),
   }),
 });

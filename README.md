@@ -79,7 +79,9 @@ Endpoints:
 - `POST /api/creator/login`: inicia sesion del creador.
 - `GET /api/creator/me`: obtiene el usuario creador autenticado.
 - `PUT /api/creator/password`: cambia la contrasena del creador.
+- `GET /api/creator/companies`: lista empresas y su estado.
 - `POST /api/creator/companies`: crea una empresa/restaurante y su usuario admin.
+- `PATCH /api/creator/companies/:id/status`: habilita o deshabilita una empresa.
 
 ## Imagenes
 

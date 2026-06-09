@@ -1,7 +1,7 @@
 import jwt, { type Secret, type SignOptions } from "jsonwebtoken";
 import { env } from "../config/env";
 import { CreatorAdmin, type ICreatorAdmin } from "../models/creatorAdmin.model";
-import { Restaurant } from "../models/restaurant.model";
+import { Restaurant, type IRestaurant } from "../models/restaurant.model";
 import { User } from "../models/user.model";
 import { AppError } from "../utils/errors";
 import { normalizeRestaurantSlug } from "../utils/restaurant";
@@ -53,6 +53,24 @@ const buildUrl = (slug: string, path: string) => {
   return `${baseUrl}/${slug}${path}`;
 };
 
+const publicCompany = (restaurant: IRestaurant | null) => {
+  if (!restaurant) throw new AppError("Empresa no encontrada", 404);
+
+  return {
+    id: restaurant._id.toString(),
+    name: restaurant.name,
+    slug: restaurant.slug,
+    storageFolder: restaurant.storageFolder,
+    isActive: restaurant.isActive,
+    urls: {
+      publicMenu: buildUrl(restaurant.slug, "/menu"),
+      adminLogin: buildUrl(restaurant.slug, "/admin/login"),
+    },
+    createdAt: restaurant.createdAt,
+    updatedAt: restaurant.updatedAt,
+  };
+};
+
 export const creatorService = {
   async ensureDefaultCreatorAdmin() {
     const existing = await CreatorAdmin.findOne({ username: defaultCreatorAdmin.username });
@@ -100,6 +118,21 @@ export const creatorService = {
     await creator.save();
 
     return publicCreator(creator);
+  },
+
+  async listCompanies() {
+    const restaurants = await Restaurant.find().sort({ createdAt: -1 });
+    return restaurants.map((restaurant) => publicCompany(restaurant));
+  },
+
+  async updateCompanyStatus(id: string, isActive: boolean) {
+    const restaurant = await Restaurant.findByIdAndUpdate(
+      id,
+      { isActive },
+      { new: true, runValidators: true },
+    );
+
+    return publicCompany(restaurant);
   },
 
   async createCompany(payload: CreateCompanyPayload) {

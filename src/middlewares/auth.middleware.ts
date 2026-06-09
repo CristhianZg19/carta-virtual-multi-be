@@ -1,6 +1,7 @@
 import type { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
+import { Restaurant } from "../models/restaurant.model";
 import { User } from "../models/user.model";
 import type { UserRole } from "../types/api";
 import { AppError } from "../utils/errors";
@@ -20,6 +21,11 @@ const attachUserFromToken = async (req: Parameters<RequestHandler>[0], token: st
 
   if (!user || !user.isActive) {
     throw new AppError("Usuario no autorizado", 401);
+  }
+
+  const restaurant = await Restaurant.exists({ _id: user.restaurantId, isActive: true });
+  if (!restaurant) {
+    throw new AppError("Empresa no disponible", 403);
   }
 
   req.user = {
