@@ -67,6 +67,20 @@ Las URLs publicas se generan como `PUBLIC_MENU_BASE_URL/{slugRestaurante}/menu`,
 - `GET /api/auth/me`: obtiene el usuario autenticado.
 - `PUT /api/auth/password`: cambia la contrasena del usuario autenticado.
 
+## Admin creador
+
+El backend inicializa un usuario creador fijo en MongoDB si no existe:
+
+- Usuario: `Cris19`
+- Password inicial: `12345678`
+
+Endpoints:
+
+- `POST /api/creator/login`: inicia sesion del creador.
+- `GET /api/creator/me`: obtiene el usuario creador autenticado.
+- `PUT /api/creator/password`: cambia la contrasena del creador.
+- `POST /api/creator/companies`: crea una empresa/restaurante y su usuario admin.
+
 ## Imagenes
 
 - `POST /api/uploads/dish-image`: sube una imagen de plato a Google Cloud Storage.

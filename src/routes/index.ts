@@ -2,6 +2,7 @@ import { Router } from "express";
 import { authRoutes } from "./auth.routes";
 import { categoryRoutes } from "./category.routes";
 import { communityRoutes } from "./community.routes";
+import { creatorRoutes } from "./creator.routes";
 import { dashboardRoutes } from "./dashboard.routes";
 import { dishRoutes } from "./dish.routes";
 import { qrRoutes } from "./qr.routes";
@@ -16,6 +17,7 @@ apiRoutes.get("/health", (_req, res) => {
 });
 
 apiRoutes.use("/auth", authRoutes);
+apiRoutes.use("/creator", creatorRoutes);
 apiRoutes.use("/dishes", dishRoutes);
 apiRoutes.use("/categories", categoryRoutes);
 apiRoutes.use("/community", communityRoutes);

@@ -10,6 +10,10 @@ declare global {
         restaurantId: string;
       };
       restaurant?: RestaurantScope;
+      creatorAdmin?: {
+        id: string;
+        username: string;
+      };
     }
   }
 }

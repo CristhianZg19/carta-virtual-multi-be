@@ -1,7 +1,16 @@
 import { env } from "./env";
 import { User } from "../models/user.model";
+import { creatorService, defaultCreatorAdmin } from "../services/creator.service";
 import { restaurantService } from "../services/restaurant.service";
 import { logger } from "../utils/logger";
+
+export const ensureCreatorAdmin = async () => {
+  const creator = await creatorService.ensureDefaultCreatorAdmin();
+  logger.info("Creator admin ready", {
+    username: creator.username,
+    defaultUsername: defaultCreatorAdmin.username,
+  });
+};
 
 export const ensureAdminUser = async () => {
   const restaurant = await restaurantService.ensureDefaultRestaurant();
@@ -53,6 +62,8 @@ export const ensureAdminUser = async () => {
 };
 
 export const runStartupTasks = async () => {
+  await ensureCreatorAdmin();
+
   if (!env.autoSeedAdmin) {
     logger.info("Admin auto seed skipped", {
       autoSeedAdmin: false,
