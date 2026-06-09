@@ -15,20 +15,21 @@ const toBoolean = (value: string | undefined, fallback = false) => {
 export const env = {
   nodeEnv: process.env.NODE_ENV ?? "development",
   port: toNumber(process.env.PORT, 4000),
-  mongoUri: process.env.MONGODB_URI ?? "mongodb://127.0.0.1:27017/restaurant_menu",
+  mongoUri: process.env.MONGODB_URI ?? "mongodb://127.0.0.1:27017/restaurant_menu_multiempresa",
   mongoServerSelectionTimeoutMs: toNumber(process.env.MONGODB_SERVER_SELECTION_TIMEOUT_MS, 10_000),
   jwtSecret: process.env.JWT_SECRET ?? "development-secret",
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "7d",
   logFormat: process.env.LOG_FORMAT ?? "text",
   clientUrl: process.env.CLIENT_URL ?? "http://localhost:5173",
-  publicMenuUrl: process.env.PUBLIC_MENU_URL ?? "http://localhost:5173/menu",
+  publicMenuBaseUrl: process.env.PUBLIC_MENU_BASE_URL ?? "http://localhost:5173",
   gcpImagesBaseUrl:
     process.env.GCP_IMAGES_BASE_URL ??
-    "https://storage.googleapis.com/matrimonioxd/platos",
+    "https://storage.googleapis.com/matrimonioxd",
   gcpLogosBaseUrl:
     process.env.GCP_LOGOS_BASE_URL ??
-    "https://storage.googleapis.com/matrimonioxd/logos",
+    "https://storage.googleapis.com/matrimonioxd",
   gcpStorageBucket: process.env.GCP_STORAGE_BUCKET ?? "matrimonioxd",
+  gcpCompaniesPrefix: process.env.GCP_COMPANIES_PREFIX ?? "empresas",
   gcpImagesPrefix: process.env.GCP_IMAGES_PREFIX ?? "platos",
   gcpLogosPrefix: process.env.GCP_LOGOS_PREFIX ?? "logos",
   gcpProjectId: process.env.GCP_PROJECT_ID ?? "",

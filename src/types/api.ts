@@ -11,3 +11,10 @@ export interface PaginationInput {
 }
 
 export type UserRole = "ADMIN" | "STAFF";
+
+export interface RestaurantScope {
+  id: string;
+  name: string;
+  slug: string;
+  storageFolder: string;
+}

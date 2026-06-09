@@ -1,6 +1,6 @@
-# Carta virtual API
+# Carta virtual multiempresa API
 
-Backend REST para una carta virtual de restaurante con panel administrativo, generacion de QR, autenticacion JWT y modulo opcional de comunidad.
+Backend REST multiempresa para cartas virtuales de restaurantes con panel administrativo, generacion de QR, autenticacion JWT y modulo opcional de comunidad.
 
 ## Stack
 
@@ -18,15 +18,16 @@ Copia `.env.example` a `.env` y ajusta las variables necesarias:
 
 ```env
 PORT=4000
-MONGODB_URI=mongodb://127.0.0.1:27017/restaurant_menu
+MONGODB_URI=mongodb://127.0.0.1:27017/restaurant_menu_multiempresa
 MONGODB_SERVER_SELECTION_TIMEOUT_MS=10000
 JWT_SECRET=change-this-secret-before-production
 LOG_FORMAT=text
 CLIENT_URL=http://localhost:5173
-PUBLIC_MENU_URL=http://localhost:5173/menu
-GCP_IMAGES_BASE_URL=https://storage.googleapis.com/matrimonioxd/platos
-GCP_LOGOS_BASE_URL=https://storage.googleapis.com/matrimonioxd/logos
+PUBLIC_MENU_BASE_URL=http://localhost:5173
+GCP_IMAGES_BASE_URL=https://storage.googleapis.com/matrimonioxd
+GCP_LOGOS_BASE_URL=https://storage.googleapis.com/matrimonioxd
 GCP_STORAGE_BUCKET=matrimonioxd
+GCP_COMPANIES_PREFIX=empresas
 GCP_IMAGES_PREFIX=platos
 GCP_LOGOS_PREFIX=logos
 GCP_PROJECT_ID=hale-skill-452420-j6
@@ -51,6 +52,8 @@ npm run dev
 
 La API queda disponible en `http://localhost:4000/api`.
 
+Las URLs publicas se generan como `PUBLIC_MENU_BASE_URL/{slugRestaurante}/menu`, por ejemplo `https://carta-virtual-multi-zm.netlify.app/casa-aurora/menu`.
+
 ## Scripts
 
 - `npm run dev`: inicia la API en desarrollo.
@@ -60,7 +63,7 @@ La API queda disponible en `http://localhost:4000/api`.
 
 ## Endpoints de auth
 
-- `POST /api/auth/login`: inicia sesion.
+- `POST /api/auth/login`: inicia sesion. Acepta `restaurantSlug` para identificar la empresa.
 - `GET /api/auth/me`: obtiene el usuario autenticado.
 - `PUT /api/auth/password`: cambia la contrasena del usuario autenticado.
 
@@ -71,6 +74,7 @@ La API queda disponible en `http://localhost:4000/api`.
 - Campo multipart: `image`.
 - Tipos permitidos: JPG, PNG, WebP y GIF.
 - Tamano maximo: 8 MB.
+- Los objetos se guardan en `empresas/{storageFolder}/platos` y `empresas/{storageFolder}/logos`.
 
 En Render configura `GCP_CREDENTIALS_JSON` con el JSON de una service account con permisos de escritura sobre el bucket, o con ese mismo JSON en Base64.
 

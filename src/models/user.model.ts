@@ -1,8 +1,9 @@
 import bcrypt from "bcryptjs";
-import { model, Schema, type Document } from "mongoose";
+import { model, Schema, Types, type Document } from "mongoose";
 import type { UserRole } from "../types/api";
 
 export interface IUser extends Document {
+  restaurantId: Types.ObjectId;
   name: string;
   email: string;
   password: string;
@@ -15,14 +16,17 @@ export interface IUser extends Document {
 
 const userSchema = new Schema<IUser>(
   {
+    restaurantId: { type: Schema.Types.ObjectId, ref: "Restaurant", required: true, index: true },
     name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    email: { type: String, required: true, lowercase: true, trim: true },
     password: { type: String, required: true, minlength: 8, select: false },
     role: { type: String, enum: ["ADMIN", "STAFF"], default: "STAFF" },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true },
 );
+
+userSchema.index({ restaurantId: 1, email: 1 }, { unique: true });
 
 userSchema.pre("save", async function hashPassword(next) {
   if (!this.isModified("password")) {

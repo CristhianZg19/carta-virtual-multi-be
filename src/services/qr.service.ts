@@ -1,4 +1,5 @@
 import { DiningTable } from "../models/table.model";
+import type { RestaurantScope } from "../types/api";
 import { AppError } from "../utils/errors";
 import { buildPublicMenuUrl, createQrDataUrl } from "../utils/qr";
 
@@ -9,18 +10,18 @@ interface GenerateQrPayload {
 }
 
 export const qrService = {
-  async generate(payload: GenerateQrPayload) {
+  async generate(restaurant: RestaurantScope, payload: GenerateQrPayload) {
     let url = payload.targetUrl;
     let table = null;
 
     if (payload.tableId) {
-      table = await DiningTable.findById(payload.tableId);
+      table = await DiningTable.findOne({ _id: payload.tableId, restaurantId: restaurant.id });
       if (!table) throw new AppError("Mesa no encontrada", 404);
       url = table.qrUrl;
     }
 
     if (!url) {
-      url = buildPublicMenuUrl(payload.tableCode);
+      url = buildPublicMenuUrl(restaurant.slug, payload.tableCode);
     }
 
     return {

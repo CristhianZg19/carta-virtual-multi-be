@@ -3,7 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler";
 import { sendSuccess } from "../utils/apiResponse";
 
 export const login = asyncHandler(async (req, res) => {
-  const result = await authService.login(req.body.email, req.body.password);
+  const result = await authService.login(req.body.email, req.body.password, req.body.restaurantSlug);
   return sendSuccess(res, 200, "Sesion iniciada correctamente", result);
 });
 

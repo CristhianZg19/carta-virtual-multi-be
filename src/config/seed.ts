@@ -14,22 +14,13 @@ import { buildPublicMenuUrl } from "../utils/qr";
 const seed = async () => {
   await connectDatabase();
 
-  const admin = await User.findOne({ email: env.adminSeedEmail });
-  if (!admin) {
-    await User.create({
-      name: env.adminSeedName,
-      email: env.adminSeedEmail,
-      password: env.adminSeedPassword,
-      role: "ADMIN",
-      isActive: true,
-    });
-  }
-
-  await Restaurant.findOneAndUpdate(
-    {},
+  const restaurant = await Restaurant.findOneAndUpdate(
+    { slug: "casa-aurora" },
     {
       name: "Casa Aurora",
-      logo: "logo-casa-aurora.png",
+      slug: "casa-aurora",
+      storageFolder: "casa-aurora",
+      logo: "empresas/casa-aurora/logos/logo-casa-aurora.png",
       description:
         "Cocina contemporanea con insumos locales, platos de temporada y cocteles de autor.",
       address: "Av. Principal 123, Lima",
@@ -51,6 +42,18 @@ const seed = async () => {
     { upsert: true, new: true, setDefaultsOnInsert: true },
   );
 
+  const admin = await User.findOne({ restaurantId: restaurant._id, email: env.adminSeedEmail });
+  if (!admin) {
+    await User.create({
+      restaurantId: restaurant._id,
+      name: env.adminSeedName,
+      email: env.adminSeedEmail,
+      password: env.adminSeedPassword,
+      role: "ADMIN",
+      isActive: true,
+    });
+  }
+
   const categories = await Promise.all(
     [
       { name: "Entradas", description: "Bocados para abrir el apetito.", order: 1 },
@@ -58,7 +61,7 @@ const seed = async () => {
       { name: "Bebidas", description: "Refrescos, cocteles y opciones sin alcohol.", order: 3 },
       { name: "Postres", description: "Finales dulces y ligeros.", order: 4 },
     ].map((category) =>
-      Category.findOneAndUpdate({ name: category.name }, category, {
+      Category.findOneAndUpdate({ restaurantId: restaurant._id, name: category.name }, { ...category, restaurantId: restaurant._id }, {
         upsert: true,
         new: true,
         setDefaultsOnInsert: true,
@@ -74,7 +77,7 @@ const seed = async () => {
         name: "Ceviche clasico",
         description: "Pesca fresca, leche de tigre, camote glaseado, choclo y cebolla crocante.",
         price: 42,
-        image: "ceviche-clasico.jpg",
+        image: "empresas/casa-aurora/platos/ceviche-clasico.jpg",
         categoryId: entradas._id,
         isFeatured: true,
         order: 1,
@@ -84,7 +87,7 @@ const seed = async () => {
         name: "Croquetas de aji amarillo",
         description: "Croquetas cremosas con salsa de hierbas, limon y queso madurado.",
         price: 28,
-        image: "croquetas-aji.jpg",
+        image: "empresas/casa-aurora/platos/croquetas-aji.jpg",
         categoryId: entradas._id,
         order: 2,
         tags: ["Nuevo"],
@@ -93,7 +96,7 @@ const seed = async () => {
         name: "Lomo saltado brasa",
         description: "Lomo sellado al wok, papas nativas, arroz graneado y jugo de carne.",
         price: 55,
-        image: "lomo-saltado.jpg",
+        image: "empresas/casa-aurora/platos/lomo-saltado.jpg",
         categoryId: fondos._id,
         isFeatured: true,
         order: 1,
@@ -103,7 +106,7 @@ const seed = async () => {
         name: "Risotto de hongos andinos",
         description: "Arroz arborio, hongos de estacion, parmesano y aceite de trufa.",
         price: 49,
-        image: "risotto-hongos.jpg",
+        image: "empresas/casa-aurora/platos/risotto-hongos.jpg",
         categoryId: fondos._id,
         order: 2,
         tags: ["Vegetariano"],
@@ -112,7 +115,7 @@ const seed = async () => {
         name: "Chicha morada especiada",
         description: "Maiz morado, pina, canela, clavo y un toque citrico.",
         price: 16,
-        image: "chicha-morada.jpg",
+        image: "empresas/casa-aurora/platos/chicha-morada.jpg",
         categoryId: bebidas._id,
         order: 1,
         tags: ["Sin alcohol"],
@@ -121,14 +124,14 @@ const seed = async () => {
         name: "Suspiro de lucuma",
         description: "Crema de lucuma, merengue ligero y crumble de cacao.",
         price: 24,
-        image: "suspiro-lucuma.jpg",
+        image: "empresas/casa-aurora/platos/suspiro-lucuma.jpg",
         categoryId: postres._id,
         isFeatured: true,
         order: 1,
         tags: ["Nuevo"],
       },
     ].map((dish) =>
-      Dish.findOneAndUpdate({ name: dish.name }, dish, {
+      Dish.findOneAndUpdate({ restaurantId: restaurant._id, name: dish.name }, { ...dish, restaurantId: restaurant._id }, {
         upsert: true,
         new: true,
         setDefaultsOnInsert: true,
@@ -139,8 +142,9 @@ const seed = async () => {
   const [ceviche, _croquetas, lomo, risotto] = seededDishes;
 
   await CommunitySettings.findOneAndUpdate(
-    {},
+    { restaurantId: restaurant._id },
     {
+      restaurantId: restaurant._id,
       commentsEnabled: true,
       recommendationsEnabled: true,
       likesEnabled: true,
@@ -183,8 +187,8 @@ const seed = async () => {
       },
     ].map((comment) =>
       Comment.findOneAndUpdate(
-        { guestId: comment.guestId, dishId: comment.dishId },
-        comment,
+        { restaurantId: restaurant._id, guestId: comment.guestId, dishId: comment.dishId },
+        { ...comment, restaurantId: restaurant._id },
         { upsert: true, new: true, setDefaultsOnInsert: true },
       ),
     ),
@@ -206,12 +210,13 @@ const seed = async () => {
     ].map((like) =>
       Like.findOneAndUpdate(
         {
+          restaurantId: restaurant._id,
           guestId: like.guestId,
           targetType: like.targetType,
           targetId: like.targetId,
           kind: like.kind,
         },
-        like,
+        { ...like, restaurantId: restaurant._id },
         { upsert: true, new: true, setDefaultsOnInsert: true },
       ),
     ),
@@ -220,6 +225,7 @@ const seed = async () => {
   await Promise.all(
     seededComments.map(async (comment) => {
       const likeCount = await Like.countDocuments({
+        restaurantId: restaurant._id,
         targetType: "COMMENT",
         targetId: comment._id,
         kind: "LIKE",
@@ -232,8 +238,8 @@ const seed = async () => {
     ["Mesa 1", "Mesa 2", "Terraza 1"].map((name) => {
       const code = name.replace(/\s+/g, "-").toUpperCase();
       return DiningTable.findOneAndUpdate(
-        { code },
-        { name, code, qrUrl: buildPublicMenuUrl(code), isActive: true },
+        { restaurantId: restaurant._id, code },
+        { restaurantId: restaurant._id, name, code, qrUrl: buildPublicMenuUrl(restaurant.slug, code), isActive: true },
         { upsert: true, new: true, setDefaultsOnInsert: true },
       );
     }),

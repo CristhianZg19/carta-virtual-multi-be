@@ -1,14 +1,36 @@
 import { Router } from "express";
 import { createDish, deleteDish, getDish, listDishes, updateDish } from "../controllers/dish.controller";
-import { authenticate, authorize } from "../middlewares/auth.middleware";
+import { authenticate, authenticateOptional, authorize } from "../middlewares/auth.middleware";
+import { resolveRestaurantScope } from "../middlewares/restaurantScope.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import { idParamSchema } from "../validators/common.validator";
 import { createDishSchema, listDishesSchema, updateDishSchema } from "../validators/dish.validator";
 
 export const dishRoutes = Router();
 
-dishRoutes.get("/", validate(listDishesSchema), listDishes);
-dishRoutes.get("/:id", validate(idParamSchema), getDish);
-dishRoutes.post("/", authenticate, authorize("ADMIN", "STAFF"), validate(createDishSchema), createDish);
-dishRoutes.put("/:id", authenticate, authorize("ADMIN", "STAFF"), validate(updateDishSchema), updateDish);
-dishRoutes.delete("/:id", authenticate, authorize("ADMIN"), validate(idParamSchema), deleteDish);
+dishRoutes.get("/", authenticateOptional, resolveRestaurantScope(), validate(listDishesSchema), listDishes);
+dishRoutes.get("/:id", authenticateOptional, resolveRestaurantScope(), validate(idParamSchema), getDish);
+dishRoutes.post(
+  "/",
+  authenticate,
+  resolveRestaurantScope(),
+  authorize("ADMIN", "STAFF"),
+  validate(createDishSchema),
+  createDish,
+);
+dishRoutes.put(
+  "/:id",
+  authenticate,
+  resolveRestaurantScope(),
+  authorize("ADMIN", "STAFF"),
+  validate(updateDishSchema),
+  updateDish,
+);
+dishRoutes.delete(
+  "/:id",
+  authenticate,
+  resolveRestaurantScope(),
+  authorize("ADMIN"),
+  validate(idParamSchema),
+  deleteDish,
+);

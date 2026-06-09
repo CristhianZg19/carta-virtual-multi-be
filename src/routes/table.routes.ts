@@ -7,6 +7,7 @@ import {
   updateTable,
 } from "../controllers/table.controller";
 import { authenticate, authorize } from "../middlewares/auth.middleware";
+import { resolveRestaurantScope } from "../middlewares/restaurantScope.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import { idParamSchema } from "../validators/common.validator";
 import { createTableSchema, updateTableSchema } from "../validators/table.validator";
@@ -14,6 +15,7 @@ import { createTableSchema, updateTableSchema } from "../validators/table.valida
 export const tableRoutes = Router();
 
 tableRoutes.use(authenticate);
+tableRoutes.use(resolveRestaurantScope());
 tableRoutes.get("/", listTables);
 tableRoutes.post("/", authorize("ADMIN", "STAFF"), validate(createTableSchema), createTable);
 tableRoutes.put("/:id", authorize("ADMIN", "STAFF"), validate(updateTableSchema), updateTable);

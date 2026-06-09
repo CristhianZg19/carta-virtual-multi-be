@@ -2,6 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import { uploadDishImage, uploadRestaurantLogo } from "../controllers/upload.controller";
 import { authenticate, authorize } from "../middlewares/auth.middleware";
+import { resolveRestaurantScope } from "../middlewares/restaurantScope.middleware";
 import { AppError } from "../utils/errors";
 
 const allowedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
@@ -26,6 +27,7 @@ export const uploadRoutes = Router();
 uploadRoutes.post(
   "/dish-image",
   authenticate,
+  resolveRestaurantScope(),
   authorize("ADMIN", "STAFF"),
   upload.single("image"),
   uploadDishImage,
@@ -34,6 +36,7 @@ uploadRoutes.post(
 uploadRoutes.post(
   "/restaurant-logo",
   authenticate,
+  resolveRestaurantScope(),
   authorize("ADMIN", "STAFF"),
   upload.single("image"),
   uploadRestaurantLogo,

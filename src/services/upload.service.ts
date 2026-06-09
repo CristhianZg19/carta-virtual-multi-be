@@ -3,6 +3,7 @@ import path from "path";
 import slugify from "slugify";
 import { env } from "../config/env";
 import { storage } from "../config/storage";
+import type { RestaurantScope } from "../types/api";
 import { AppError } from "../utils/errors";
 
 const extensionByMimeType: Record<string, string> = {
@@ -26,8 +27,9 @@ export const uploadService = {
     file?: Express.Multer.File;
     prefix: string;
     fallbackName: string;
+    restaurant: RestaurantScope;
   }) {
-    const { file, prefix, fallbackName } = options;
+    const { file, prefix, fallbackName, restaurant } = options;
     if (!file) throw new AppError("Selecciona una imagen", 400);
 
     if (!env.gcpStorageBucket) {
@@ -35,7 +37,9 @@ export const uploadService = {
     }
 
     const filename = filenameFrom(file, fallbackName);
-    const cleanObjectPrefix = cleanPrefix(prefix);
+    const cleanObjectPrefix = cleanPrefix(
+      [env.gcpCompaniesPrefix, restaurant.storageFolder, prefix].filter(Boolean).join("/"),
+    );
     const objectName = cleanObjectPrefix ? `${cleanObjectPrefix}/${filename}` : filename;
 
     await storage
@@ -50,7 +54,7 @@ export const uploadService = {
       });
 
     return {
-      path: filename,
+      path: objectName,
       objectName,
       url: `https://storage.googleapis.com/${env.gcpStorageBucket}/${objectName}`,
       contentType: file.mimetype,
@@ -58,19 +62,21 @@ export const uploadService = {
     };
   },
 
-  async uploadDishImage(file?: Express.Multer.File) {
+  async uploadDishImage(restaurant: RestaurantScope, file?: Express.Multer.File) {
     return this.uploadImage({
       file,
       prefix: env.gcpImagesPrefix,
       fallbackName: "plato",
+      restaurant,
     });
   },
 
-  async uploadRestaurantLogo(file?: Express.Multer.File) {
+  async uploadRestaurantLogo(restaurant: RestaurantScope, file?: Express.Multer.File) {
     return this.uploadImage({
       file,
       prefix: env.gcpLogosPrefix,
       fallbackName: "logo",
+      restaurant,
     });
   },
 };

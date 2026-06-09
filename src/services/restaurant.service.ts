@@ -1,9 +1,12 @@
-import { Restaurant } from "../models/restaurant.model";
+import { Restaurant, type IRestaurant } from "../models/restaurant.model";
 import { AppError } from "../utils/errors";
 import { resolveRestaurantLogoUrl } from "../utils/images";
+import { normalizeRestaurantSlug } from "../utils/restaurant";
 
 const defaultRestaurant = {
   name: "Casa Aurora",
+  slug: "casa-aurora",
+  storageFolder: "casa-aurora",
   logo: "",
   description: "Cocina de temporada, platos frescos y una carta lista para descubrir desde tu mesa.",
   address: "Av. Principal 123",
@@ -25,6 +28,8 @@ const defaultRestaurant = {
 
 interface RestaurantPayload {
   name?: string;
+  slug?: string;
+  storageFolder?: string;
   logo?: string;
   description?: string;
   address?: string;
@@ -44,29 +49,59 @@ interface RestaurantPayload {
   isActive?: boolean;
 }
 
+const serializeRestaurant = (restaurant: IRestaurant | null) => {
+  if (!restaurant) throw new AppError("Restaurante no encontrado", 404);
+  const item = restaurant.toObject();
+  return { ...item, id: restaurant._id.toString(), logoUrl: resolveRestaurantLogoUrl(restaurant.logo) };
+};
+
+const normalizePayload = (payload: RestaurantPayload) => ({
+  ...payload,
+  slug: payload.slug ? normalizeRestaurantSlug(payload.slug) : undefined,
+  storageFolder: payload.storageFolder ? normalizeRestaurantSlug(payload.storageFolder) : undefined,
+});
+
 export const restaurantService = {
-  async get() {
+  async getDefault() {
     const restaurant = await Restaurant.findOne().sort({ createdAt: 1 });
     if (restaurant) {
-      const item = restaurant.toObject();
-      return { ...item, id: restaurant._id.toString(), logoUrl: resolveRestaurantLogoUrl(restaurant.logo) };
+      return serializeRestaurant(restaurant);
     }
 
     const created = await Restaurant.create(defaultRestaurant);
-    const item = created.toObject();
-    return { ...item, id: created._id.toString(), logoUrl: resolveRestaurantLogoUrl(created.logo) };
+    return serializeRestaurant(created);
   },
 
-  async update(payload: RestaurantPayload) {
-    const restaurant = await Restaurant.findOneAndUpdate({}, payload, {
+  async getById(id: string) {
+    return serializeRestaurant(await Restaurant.findById(id));
+  },
+
+  async getBySlug(slug: string) {
+    return serializeRestaurant(
+      await Restaurant.findOne({ slug: normalizeRestaurantSlug(slug), isActive: true }),
+    );
+  },
+
+  async ensureDefaultRestaurant() {
+    return Restaurant.findOneAndUpdate(
+      { slug: defaultRestaurant.slug },
+      defaultRestaurant,
+      {
+        new: true,
+        upsert: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
+    );
+  },
+
+  async update(id: string, payload: RestaurantPayload) {
+    const normalized = normalizePayload(payload);
+    const restaurant = await Restaurant.findByIdAndUpdate(id, normalized, {
       new: true,
       runValidators: true,
-      upsert: true,
-      setDefaultsOnInsert: true,
     });
 
-    if (!restaurant) throw new AppError("Restaurante no encontrado", 404);
-    const item = restaurant.toObject();
-    return { ...item, id: restaurant._id.toString(), logoUrl: resolveRestaurantLogoUrl(restaurant.logo) };
+    return serializeRestaurant(restaurant);
   },
 };

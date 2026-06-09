@@ -1,6 +1,7 @@
 import { model, Schema, Types, type Document } from "mongoose";
 
 export interface IDish extends Document {
+  restaurantId: Types.ObjectId;
   name: string;
   description: string;
   price: number;
@@ -16,6 +17,7 @@ export interface IDish extends Document {
 
 const dishSchema = new Schema<IDish>(
   {
+    restaurantId: { type: Schema.Types.ObjectId, ref: "Restaurant", required: true, index: true },
     name: { type: String, required: true, trim: true, index: true },
     description: { type: String, required: true, trim: true },
     price: { type: Number, required: true, min: 0 },
@@ -29,6 +31,7 @@ const dishSchema = new Schema<IDish>(
   { timestamps: true },
 );
 
-dishSchema.index({ name: "text", description: "text", tags: "text" });
+dishSchema.index({ restaurantId: 1, categoryId: 1, isAvailable: 1, order: 1 });
+dishSchema.index({ restaurantId: 1, name: "text", description: "text", tags: "text" });
 
 export const Dish = model<IDish>("Dish", dishSchema);

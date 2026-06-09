@@ -4,6 +4,7 @@ export type LikeTargetType = "DISH" | "COMMENT";
 export type LikeKind = "LIKE" | "RECOMMENDATION";
 
 export interface ILike extends Document {
+  restaurantId: Types.ObjectId;
   targetType: LikeTargetType;
   targetId: Types.ObjectId;
   dishId?: Types.ObjectId;
@@ -15,6 +16,7 @@ export interface ILike extends Document {
 
 const likeSchema = new Schema<ILike>(
   {
+    restaurantId: { type: Schema.Types.ObjectId, ref: "Restaurant", required: true, index: true },
     targetType: { type: String, enum: ["DISH", "COMMENT"], required: true, index: true },
     targetId: { type: Schema.Types.ObjectId, required: true, index: true },
     dishId: { type: Schema.Types.ObjectId, ref: "Dish", index: true },
@@ -24,7 +26,10 @@ const likeSchema = new Schema<ILike>(
   { timestamps: true },
 );
 
-likeSchema.index({ guestId: 1, targetType: 1, targetId: 1, kind: 1 }, { unique: true });
-likeSchema.index({ targetType: 1, targetId: 1, kind: 1 });
+likeSchema.index(
+  { restaurantId: 1, guestId: 1, targetType: 1, targetId: 1, kind: 1 },
+  { unique: true },
+);
+likeSchema.index({ restaurantId: 1, targetType: 1, targetId: 1, kind: 1 });
 
 export const Like = model<ILike>("Like", likeSchema, "likes");

@@ -10,7 +10,7 @@ const start = async () => {
       nodeEnv: env.nodeEnv,
       port: env.port,
       clientUrl: env.clientUrl,
-      publicMenuUrl: env.publicMenuUrl,
+      publicMenuBaseUrl: env.publicMenuBaseUrl,
       mongoUri: redactConnectionString(env.mongoUri),
       logFormat: env.logFormat,
       autoSeedAdmin: env.autoSeedAdmin,

@@ -1,6 +1,7 @@
-import { model, Schema, type Document } from "mongoose";
+import { model, Schema, Types, type Document } from "mongoose";
 
 export interface ICommunitySettings extends Document {
+  restaurantId: Types.ObjectId;
   commentsEnabled: boolean;
   recommendationsEnabled: boolean;
   likesEnabled: boolean;
@@ -14,6 +15,7 @@ export interface ICommunitySettings extends Document {
 
 const communitySettingsSchema = new Schema<ICommunitySettings>(
   {
+    restaurantId: { type: Schema.Types.ObjectId, ref: "Restaurant", required: true, index: true },
     commentsEnabled: { type: Boolean, default: false },
     recommendationsEnabled: { type: Boolean, default: false },
     likesEnabled: { type: Boolean, default: false },
@@ -24,6 +26,8 @@ const communitySettingsSchema = new Schema<ICommunitySettings>(
   },
   { timestamps: true },
 );
+
+communitySettingsSchema.index({ restaurantId: 1 }, { unique: true });
 
 export const CommunitySettings = model<ICommunitySettings>(
   "CommunitySettings",

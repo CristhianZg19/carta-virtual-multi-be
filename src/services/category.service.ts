@@ -18,9 +18,9 @@ interface CategoryPayload {
 }
 
 export const categoryService = {
-  async list(query: CategoryQuery) {
+  async list(restaurantId: string, query: CategoryQuery) {
     const { page, limit, skip } = getPagination(query);
-    const filter: Record<string, unknown> = {};
+    const filter: Record<string, unknown> = { restaurantId };
 
     if (query.search) {
       filter.name = { $regex: query.search, $options: "i" };
@@ -38,23 +38,26 @@ export const categoryService = {
     return { items, meta: getPaginationMeta(page, limit, total) };
   },
 
-  async create(payload: CategoryPayload) {
-    return Category.create(payload);
+  async create(restaurantId: string, payload: CategoryPayload) {
+    return Category.create({ ...payload, restaurantId });
   },
 
-  async update(id: string, payload: CategoryPayload) {
-    const category = await Category.findByIdAndUpdate(id, payload, { new: true, runValidators: true });
+  async update(restaurantId: string, id: string, payload: CategoryPayload) {
+    const category = await Category.findOneAndUpdate({ _id: id, restaurantId }, payload, {
+      new: true,
+      runValidators: true,
+    });
     if (!category) throw new AppError("Categoria no encontrada", 404);
     return category;
   },
 
-  async remove(id: string) {
-    const linkedDishes = await Dish.countDocuments({ categoryId: id });
+  async remove(restaurantId: string, id: string) {
+    const linkedDishes = await Dish.countDocuments({ restaurantId, categoryId: id });
     if (linkedDishes > 0) {
       throw new AppError("No se puede eliminar una categoria con platos asociados", 409);
     }
 
-    const category = await Category.findByIdAndDelete(id);
+    const category = await Category.findOneAndDelete({ _id: id, restaurantId });
     if (!category) throw new AppError("Categoria no encontrada", 404);
     return category;
   },

@@ -1,8 +1,9 @@
 import QRCode from "qrcode";
 import { env } from "../config/env";
 
-export const buildPublicMenuUrl = (tableCode?: string) => {
-  const url = new URL(env.publicMenuUrl);
+export const buildPublicMenuUrl = (restaurantSlug: string, tableCode?: string) => {
+  const baseUrl = env.publicMenuBaseUrl.replace(/\/+$/, "");
+  const url = new URL(`${baseUrl}/${restaurantSlug}/menu`);
   if (tableCode) {
     url.searchParams.set("table", tableCode);
   }

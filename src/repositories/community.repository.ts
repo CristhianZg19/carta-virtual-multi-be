@@ -39,14 +39,14 @@ const getStartOfDay = (daysBack: number) => {
 };
 
 export const communityRepository = {
-  async getSettings() {
-    const existing = await CommunitySettings.findOne().sort({ createdAt: 1 });
+  async getSettings(restaurantId: string) {
+    const existing = await CommunitySettings.findOne({ restaurantId }).sort({ createdAt: 1 });
     if (existing) return existing;
-    return CommunitySettings.create({});
+    return CommunitySettings.create({ restaurantId });
   },
 
-  async updateSettings(payload: Partial<Record<string, boolean>>) {
-    return CommunitySettings.findOneAndUpdate({}, payload, {
+  async updateSettings(restaurantId: string, payload: Partial<Record<string, boolean>>) {
+    return CommunitySettings.findOneAndUpdate({ restaurantId }, payload, {
       new: true,
       runValidators: true,
       upsert: true,
@@ -54,12 +54,12 @@ export const communityRepository = {
     });
   },
 
-  async dishExists(dishId: string) {
+  async dishExists(restaurantId: string, dishId: string) {
     if (!Types.ObjectId.isValid(dishId)) return false;
-    return Dish.exists({ _id: dishId, isAvailable: true });
+    return Dish.exists({ _id: dishId, restaurantId, isAvailable: true });
   },
 
-  async createComment(payload: {
+  async createComment(restaurantId: string, payload: {
     dishId: string;
     guestId: string;
     guestName: string;
@@ -69,13 +69,14 @@ export const communityRepository = {
   }) {
     return Comment.create({
       ...payload,
+      restaurantId,
       dishId: asObjectId(payload.dishId),
     });
   },
 
-  async listComments(filters: CommentFilters, forceVisibleOnly = false) {
+  async listComments(restaurantId: string, filters: CommentFilters, forceVisibleOnly = false) {
     const { page, limit, skip } = getPagination(filters);
-    const query: Record<string, unknown> = {};
+    const query: Record<string, unknown> = { restaurantId };
 
     if (filters.dishId && Types.ObjectId.isValid(filters.dishId)) {
       query.dishId = filters.dishId;
@@ -109,32 +110,32 @@ export const communityRepository = {
     return { items, meta: getPaginationMeta(page, limit, total) };
   },
 
-  async findComment(id: string) {
+  async findComment(restaurantId: string, id: string) {
     if (!Types.ObjectId.isValid(id)) return null;
-    return Comment.findById(id).populate("dishId", "name image price");
+    return Comment.findOne({ _id: id, restaurantId }).populate("dishId", "name image price");
   },
 
-  async updateComment(id: string, payload: Partial<{
+  async updateComment(restaurantId: string, id: string, payload: Partial<{
     status: CommentStatus;
     isFeatured: boolean;
     isPinned: boolean;
     moderationReason: string;
   }>) {
-    return Comment.findByIdAndUpdate(id, payload, {
+    return Comment.findOneAndUpdate({ _id: id, restaurantId }, payload, {
       new: true,
       runValidators: true,
     }).populate("dishId", "name image price");
   },
 
-  async deleteComment(id: string) {
-    const comment = await Comment.findByIdAndDelete(id);
+  async deleteComment(restaurantId: string, id: string) {
+    const comment = await Comment.findOneAndDelete({ _id: id, restaurantId });
     if (comment) {
-      await Like.deleteMany({ targetType: "COMMENT", targetId: comment._id });
+      await Like.deleteMany({ restaurantId, targetType: "COMMENT", targetId: comment._id });
     }
     return comment;
   },
 
-  async toggleLike(payload: {
+  async toggleLike(restaurantId: string, payload: {
     targetType: LikeTargetType;
     targetId: string;
     guestId: string;
@@ -142,6 +143,7 @@ export const communityRepository = {
     dishId?: string;
   }) {
     const filter = {
+      restaurantId,
       targetType: payload.targetType,
       targetId: asObjectId(payload.targetId),
       guestId: payload.guestId,
@@ -161,17 +163,18 @@ export const communityRepository = {
     return { active: true };
   },
 
-  async syncCommentLikeCount(commentId: string) {
+  async syncCommentLikeCount(restaurantId: string, commentId: string) {
     const count = await Like.countDocuments({
+      restaurantId,
       targetType: "COMMENT",
       targetId: asObjectId(commentId),
       kind: "LIKE",
     });
-    return Comment.findByIdAndUpdate(commentId, { likeCount: count }, { new: true });
+    return Comment.findOneAndUpdate({ _id: commentId, restaurantId }, { likeCount: count }, { new: true });
   },
 
-  async getGuestActions(guestId: string) {
-    const likes = await Like.find({ guestId }).select("targetType targetId kind");
+  async getGuestActions(restaurantId: string, guestId: string) {
+    const likes = await Like.find({ restaurantId, guestId }).select("targetType targetId kind");
     return likes.map((like) => ({
       targetType: like.targetType,
       targetId: like.targetId.toString(),
@@ -179,25 +182,39 @@ export const communityRepository = {
     }));
   },
 
-  async calculateRankings(limit = 8) {
+  async calculateRankings(restaurantId: string, limit = 8) {
     const weekStart = getStartOfDay(7);
     const monthStart = getStartOfDay(30);
 
     const [commentGroups, likeGroups, weeklyGroups, monthlyGroups] = await Promise.all([
       Comment.aggregate<{ _id: Types.ObjectId; count: number }>([
-        { $match: { status: "VISIBLE" } },
+        { $match: { restaurantId: asObjectId(restaurantId), status: "VISIBLE" } },
         { $group: { _id: "$dishId", count: { $sum: 1 } } },
       ]),
       Like.aggregate<{ _id: { dishId: Types.ObjectId; kind: LikeKind }; count: number }>([
-        { $match: { targetType: "DISH" } },
+        { $match: { restaurantId: asObjectId(restaurantId), targetType: "DISH" } },
         { $group: { _id: { dishId: "$targetId", kind: "$kind" }, count: { $sum: 1 } } },
       ]),
       Like.aggregate<{ _id: Types.ObjectId; count: number }>([
-        { $match: { targetType: "DISH", kind: "RECOMMENDATION", createdAt: { $gte: weekStart } } },
+        {
+          $match: {
+            restaurantId: asObjectId(restaurantId),
+            targetType: "DISH",
+            kind: "RECOMMENDATION",
+            createdAt: { $gte: weekStart },
+          },
+        },
         { $group: { _id: "$targetId", count: { $sum: 1 } } },
       ]),
       Like.aggregate<{ _id: Types.ObjectId; count: number }>([
-        { $match: { targetType: "DISH", kind: "RECOMMENDATION", createdAt: { $gte: monthStart } } },
+        {
+          $match: {
+            restaurantId: asObjectId(restaurantId),
+            targetType: "DISH",
+            kind: "RECOMMENDATION",
+            createdAt: { $gte: monthStart },
+          },
+        },
         { $group: { _id: "$targetId", count: { $sum: 1 } } },
       ]),
     ]);
@@ -253,7 +270,7 @@ export const communityRepository = {
     const maxScore = Math.max(0, ...rows.map((row) => row.score));
 
     const dishIds = rows.map((row) => row.dishId);
-    const dishes = await Dish.find({ _id: { $in: dishIds }, isAvailable: true })
+    const dishes = await Dish.find({ _id: { $in: dishIds }, restaurantId, isAvailable: true })
       .populate("categoryId", "name order isActive")
       .select("name description price image categoryId isAvailable isFeatured order tags");
 
@@ -295,8 +312,9 @@ export const communityRepository = {
     await Promise.all(
       enriched.map((row) =>
         DishRanking.findOneAndUpdate(
-          { dishId: row.dishId },
+          { restaurantId, dishId: row.dishId },
           {
+            restaurantId,
             dishId: row.dishId,
             commentCount: row.commentCount,
             recommendationCount: row.recommendationCount,
@@ -315,17 +333,17 @@ export const communityRepository = {
     return enriched;
   },
 
-  async analytics() {
+  async analytics(restaurantId: string) {
     const [totalComments, totalLikes, totalRecommendations, recentComments, rankings] =
       await Promise.all([
-        Comment.countDocuments(),
-        Like.countDocuments({ kind: "LIKE" }),
-        Like.countDocuments({ kind: "RECOMMENDATION" }),
-        Comment.find()
+        Comment.countDocuments({ restaurantId }),
+        Like.countDocuments({ restaurantId, kind: "LIKE" }),
+        Like.countDocuments({ restaurantId, kind: "RECOMMENDATION" }),
+        Comment.find({ restaurantId })
           .populate("dishId", "name")
           .sort({ createdAt: -1 })
           .limit(8),
-        this.calculateRankings(5),
+        this.calculateRankings(restaurantId, 5),
       ]);
 
     const snapshot = {
@@ -337,7 +355,7 @@ export const communityRepository = {
       generatedAt: new Date(),
     };
 
-    await AnalyticsSnapshot.create({ name: "community_dashboard", data: snapshot });
+    await AnalyticsSnapshot.create({ restaurantId, name: "community_dashboard", data: snapshot });
     return snapshot;
   },
 };

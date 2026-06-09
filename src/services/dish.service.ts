@@ -1,4 +1,5 @@
 import { Dish, type IDish } from "../models/dish.model";
+import { Category } from "../models/category.model";
 import { AppError } from "../utils/errors";
 import { resolveDishImageUrl } from "../utils/images";
 import { getPagination, getPaginationMeta } from "../utils/pagination";
@@ -35,9 +36,9 @@ const serializeDish = (dish: IDish) => {
 };
 
 export const dishService = {
-  async list(query: DishQuery) {
+  async list(restaurantId: string, query: DishQuery) {
     const { page, limit, skip } = getPagination(query);
-    const filter: Record<string, unknown> = {};
+    const filter: Record<string, unknown> = { restaurantId };
 
     if (query.search) {
       filter.$or = [
@@ -67,20 +68,33 @@ export const dishService = {
     };
   },
 
-  async getById(id: string) {
-    const dish = await Dish.findById(id).populate("categoryId", "name order isActive");
+  async getById(restaurantId: string, id: string) {
+    const dish = await Dish.findOne({ _id: id, restaurantId }).populate(
+      "categoryId",
+      "name order isActive",
+    );
     if (!dish) throw new AppError("Plato no encontrado", 404);
     return serializeDish(dish);
   },
 
-  async create(payload: DishPayload) {
-    const dish = await Dish.create(payload);
+  async create(restaurantId: string, payload: DishPayload) {
+    if (payload.categoryId) {
+      const category = await Category.exists({ _id: payload.categoryId, restaurantId });
+      if (!category) throw new AppError("Categoria no encontrada", 404);
+    }
+
+    const dish = await Dish.create({ ...payload, restaurantId });
     await dish.populate("categoryId", "name order isActive");
     return serializeDish(dish);
   },
 
-  async update(id: string, payload: DishPayload) {
-    const dish = await Dish.findByIdAndUpdate(id, payload, {
+  async update(restaurantId: string, id: string, payload: DishPayload) {
+    if (payload.categoryId) {
+      const category = await Category.exists({ _id: payload.categoryId, restaurantId });
+      if (!category) throw new AppError("Categoria no encontrada", 404);
+    }
+
+    const dish = await Dish.findOneAndUpdate({ _id: id, restaurantId }, payload, {
       new: true,
       runValidators: true,
     }).populate("categoryId", "name order isActive");
@@ -89,8 +103,8 @@ export const dishService = {
     return serializeDish(dish);
   },
 
-  async remove(id: string) {
-    const dish = await Dish.findByIdAndDelete(id);
+  async remove(restaurantId: string, id: string) {
+    const dish = await Dish.findOneAndDelete({ _id: id, restaurantId });
     if (!dish) throw new AppError("Plato no encontrado", 404);
     return serializeDish(dish);
   },

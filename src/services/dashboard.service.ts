@@ -3,7 +3,7 @@ import { Dish } from "../models/dish.model";
 import { DiningTable } from "../models/table.model";
 
 export const dashboardService = {
-  async stats() {
+  async stats(restaurantId: string) {
     const [
       totalDishes,
       totalCategories,
@@ -12,12 +12,12 @@ export const dashboardService = {
       featuredDishes,
       inactiveTables,
     ] = await Promise.all([
-      Dish.countDocuments(),
-      Category.countDocuments(),
-      DiningTable.countDocuments(),
-      Dish.countDocuments({ isAvailable: true }),
-      Dish.countDocuments({ isFeatured: true }),
-      DiningTable.countDocuments({ isActive: false }),
+      Dish.countDocuments({ restaurantId }),
+      Category.countDocuments({ restaurantId }),
+      DiningTable.countDocuments({ restaurantId }),
+      Dish.countDocuments({ restaurantId, isAvailable: true }),
+      Dish.countDocuments({ restaurantId, isFeatured: true }),
+      DiningTable.countDocuments({ restaurantId, isActive: false }),
     ]);
 
     return {

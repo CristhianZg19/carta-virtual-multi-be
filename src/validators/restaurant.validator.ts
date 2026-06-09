@@ -3,6 +3,8 @@ import { z } from "zod";
 export const updateRestaurantSchema = z.object({
   body: z.object({
     name: z.string().min(2).max(120).optional(),
+    slug: z.string().min(2).max(120).optional(),
+    storageFolder: z.string().min(2).max(120).optional(),
     logo: z.string().max(600).optional(),
     description: z.string().max(700).optional(),
     address: z.string().max(250).optional(),

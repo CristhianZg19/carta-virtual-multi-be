@@ -1,7 +1,10 @@
 import { model, Schema, type Document } from "mongoose";
+import { normalizeRestaurantSlug } from "../utils/restaurant";
 
 export interface IRestaurant extends Document {
   name: string;
+  slug: string;
+  storageFolder: string;
   logo?: string;
   description?: string;
   address?: string;
@@ -26,6 +29,8 @@ export interface IRestaurant extends Document {
 const restaurantSchema = new Schema<IRestaurant>(
   {
     name: { type: String, required: true, trim: true },
+    slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    storageFolder: { type: String, required: true, trim: true },
     logo: { type: String, trim: true, default: "" },
     description: { type: String, trim: true, default: "" },
     address: { type: String, trim: true, default: "" },
@@ -46,5 +51,21 @@ const restaurantSchema = new Schema<IRestaurant>(
   },
   { timestamps: true },
 );
+
+restaurantSchema.pre("validate", function setSlugAndFolder(next) {
+  if (!this.slug && this.name) {
+    this.slug = normalizeRestaurantSlug(this.name);
+  } else if (this.slug) {
+    this.slug = normalizeRestaurantSlug(this.slug);
+  }
+
+  if (!this.storageFolder) {
+    this.storageFolder = this.slug;
+  } else {
+    this.storageFolder = normalizeRestaurantSlug(this.storageFolder);
+  }
+
+  next();
+});
 
 export const Restaurant = model<IRestaurant>("Restaurant", restaurantSchema);

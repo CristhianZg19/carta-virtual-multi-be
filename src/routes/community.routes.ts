@@ -15,7 +15,8 @@ import {
   updateCommentModeration,
   updateCommunitySettings,
 } from "../controllers/community.controller";
-import { authenticate, authorize } from "../middlewares/auth.middleware";
+import { authenticate, authenticateOptional, authorize } from "../middlewares/auth.middleware";
+import { resolveRestaurantScope } from "../middlewares/restaurantScope.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import {
   commentLikeSchema,
@@ -31,17 +32,54 @@ import { idParamSchema } from "../validators/common.validator";
 
 export const communityRoutes = Router();
 
-communityRoutes.get("/settings", getCommunitySettings);
-communityRoutes.get("/comments", validate(listCommentsSchema), listPublicComments);
-communityRoutes.post("/comments", validate(createCommentSchema), createComment);
-communityRoutes.delete("/comments/:id", validate(guestDeleteCommentSchema), guestDeleteComment);
-communityRoutes.post("/comments/:id/like", validate(commentLikeSchema), toggleCommentLike);
-communityRoutes.post("/dishes/:dishId/like", validate(dishActionSchema), toggleDishLike);
-communityRoutes.post("/dishes/:dishId/recommend", validate(dishActionSchema), toggleDishRecommendation);
-communityRoutes.get("/rankings", validate(rankingsQuerySchema), getRankings);
-communityRoutes.get("/guest-actions", getGuestActions);
+communityRoutes.get("/settings", authenticateOptional, resolveRestaurantScope(), getCommunitySettings);
+communityRoutes.get(
+  "/comments",
+  authenticateOptional,
+  resolveRestaurantScope(),
+  validate(listCommentsSchema),
+  listPublicComments,
+);
+communityRoutes.post("/comments", resolveRestaurantScope(), validate(createCommentSchema), createComment);
+communityRoutes.delete(
+  "/comments/:id",
+  authenticateOptional,
+  resolveRestaurantScope(),
+  validate(guestDeleteCommentSchema),
+  guestDeleteComment,
+);
+communityRoutes.post(
+  "/comments/:id/like",
+  authenticateOptional,
+  resolveRestaurantScope(),
+  validate(commentLikeSchema),
+  toggleCommentLike,
+);
+communityRoutes.post(
+  "/dishes/:dishId/like",
+  authenticateOptional,
+  resolveRestaurantScope(),
+  validate(dishActionSchema),
+  toggleDishLike,
+);
+communityRoutes.post(
+  "/dishes/:dishId/recommend",
+  authenticateOptional,
+  resolveRestaurantScope(),
+  validate(dishActionSchema),
+  toggleDishRecommendation,
+);
+communityRoutes.get(
+  "/rankings",
+  authenticateOptional,
+  resolveRestaurantScope(),
+  validate(rankingsQuerySchema),
+  getRankings,
+);
+communityRoutes.get("/guest-actions", authenticateOptional, resolveRestaurantScope(), getGuestActions);
 
 communityRoutes.use("/admin", authenticate);
+communityRoutes.use("/admin", resolveRestaurantScope());
 communityRoutes.put(
   "/admin/settings",
   authorize("ADMIN"),
