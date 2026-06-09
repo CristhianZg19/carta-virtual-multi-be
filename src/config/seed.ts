@@ -26,6 +26,7 @@ const seed = async () => {
       address: "Av. Principal 123, Lima",
       phone: "+51 999 888 777",
       whatsapp: "+51999888777",
+      showWhatsapp: true,
       openingHours: "Lunes a domingo, 12:00 p.m. - 11:00 p.m.",
       socialLinks: {
         instagram: "https://instagram.com/casaaurora",

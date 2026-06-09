@@ -10,6 +10,7 @@ export const updateRestaurantSchema = z.object({
     address: z.string().max(250).optional(),
     phone: z.string().max(60).optional(),
     whatsapp: z.string().max(60).optional(),
+    showWhatsapp: z.boolean().optional(),
     openingHours: z.string().max(180).optional(),
     socialLinks: z
       .object({

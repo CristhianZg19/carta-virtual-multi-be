@@ -10,6 +10,7 @@ export interface IRestaurant extends Document {
   address?: string;
   phone?: string;
   whatsapp?: string;
+  showWhatsapp: boolean;
   socialLinks: {
     instagram?: string;
     facebook?: string;
@@ -36,6 +37,7 @@ const restaurantSchema = new Schema<IRestaurant>(
     address: { type: String, trim: true, default: "" },
     phone: { type: String, trim: true, default: "" },
     whatsapp: { type: String, trim: true, default: "" },
+    showWhatsapp: { type: Boolean, default: true },
     socialLinks: {
       instagram: { type: String, trim: true, default: "" },
       facebook: { type: String, trim: true, default: "" },
