@@ -1,9 +1,10 @@
 import { creatorService } from "../services/creator.service";
 import { sendSuccess } from "../utils/apiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
+import { getRequestMeta } from "../utils/requestMeta";
 
 export const creatorLogin = asyncHandler(async (req, res) => {
-  const result = await creatorService.login(req.body.username, req.body.password);
+  const result = await creatorService.login(req.body.username, req.body.password, getRequestMeta(req));
   return sendSuccess(res, 200, "Sesion de creador iniciada", result);
 });
 
@@ -24,6 +25,11 @@ export const changeCreatorPassword = asyncHandler(async (req, res) => {
 export const listCompanies = asyncHandler(async (_req, res) => {
   const companies = await creatorService.listCompanies();
   return sendSuccess(res, 200, "Empresas obtenidas", companies);
+});
+
+export const listLoginTraces = asyncHandler(async (req, res) => {
+  const traces = await creatorService.listLoginTraces(req.query);
+  return sendSuccess(res, 200, "Logs de inicio de sesion obtenidos", traces);
 });
 
 export const updateCompanyStatus = asyncHandler(async (req, res) => {

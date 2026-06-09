@@ -3,6 +3,7 @@ import { env } from "../config/env";
 import { CreatorAdmin, type ICreatorAdmin } from "../models/creatorAdmin.model";
 import { Restaurant, type IRestaurant } from "../models/restaurant.model";
 import { User } from "../models/user.model";
+import { loginTraceService } from "./loginTrace.service";
 import { AppError } from "../utils/errors";
 import { normalizeRestaurantSlug } from "../utils/restaurant";
 
@@ -29,6 +30,20 @@ interface CreateCompanyPayload {
     email: string;
     password: string;
   };
+}
+
+interface LoginRequestMeta {
+  ip?: string;
+  userAgent?: string;
+  method?: string;
+  path?: string;
+}
+
+interface LoginTraceQuery {
+  actorType?: "BUSINESS_ADMIN" | "CREATOR_ADMIN";
+  success?: boolean;
+  restaurantSlug?: string;
+  limit?: number;
 }
 
 const publicCreator = (creator: ICreatorAdmin) => ({
@@ -82,17 +97,43 @@ export const creatorService = {
     });
   },
 
-  async login(username: string, password: string) {
-    const creator = await CreatorAdmin.findOne({ username, isActive: true }).select("+password");
+  async login(username: string, password: string, meta: LoginRequestMeta = {}) {
+    const identifier = username.toLowerCase();
+    let creator: ICreatorAdmin | null = null;
 
-    if (!creator || !(await creator.comparePassword(password))) {
-      throw new AppError("Credenciales invalidas", 401);
+    try {
+      creator = await CreatorAdmin.findOne({ username, isActive: true }).select("+password");
+
+      if (!creator || !(await creator.comparePassword(password))) {
+        throw new AppError("Credenciales invalidas", 401);
+      }
+
+      await loginTraceService.record({
+        actorType: "CREATOR_ADMIN",
+        identifier,
+        userId: creator._id,
+        userName: creator.name,
+        success: true,
+        ...meta,
+      });
+
+      return {
+        token: signToken(creator),
+        user: publicCreator(creator),
+      };
+    } catch (error) {
+      await loginTraceService.record({
+        actorType: "CREATOR_ADMIN",
+        identifier,
+        userId: creator?._id,
+        userName: creator?.name,
+        success: false,
+        failureReason: error instanceof Error ? error.message : "Error desconocido",
+        ...meta,
+      });
+
+      throw error;
     }
-
-    return {
-      token: signToken(creator),
-      user: publicCreator(creator),
-    };
   },
 
   async me(creatorId: string) {
@@ -123,6 +164,10 @@ export const creatorService = {
   async listCompanies() {
     const restaurants = await Restaurant.find().sort({ createdAt: -1 });
     return restaurants.map((restaurant) => publicCompany(restaurant));
+  },
+
+  async listLoginTraces(query: LoginTraceQuery) {
+    return loginTraceService.list(query);
   },
 
   async updateCompanyStatus(id: string, isActive: boolean) {

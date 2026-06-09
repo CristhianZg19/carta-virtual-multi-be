@@ -5,6 +5,7 @@ import {
   creatorLogin,
   getCreatorMe,
   listCompanies,
+  listLoginTraces,
   updateCompanyStatus,
 } from "../controllers/creator.controller";
 import { authenticateCreator } from "../middlewares/creatorAuth.middleware";
@@ -13,6 +14,7 @@ import {
   createCompanySchema,
   creatorChangePasswordSchema,
   creatorLoginSchema,
+  listLoginTracesSchema,
   updateCompanyStatusSchema,
 } from "../validators/creator.validator";
 
@@ -27,6 +29,7 @@ creatorRoutes.put(
   changeCreatorPassword,
 );
 creatorRoutes.get("/companies", authenticateCreator, listCompanies);
+creatorRoutes.get("/login-traces", authenticateCreator, validate(listLoginTracesSchema), listLoginTraces);
 creatorRoutes.post(
   "/companies",
   authenticateCreator,

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { idParamSchema } from "./common.validator";
+import { booleanQuery, idParamSchema } from "./common.validator";
 
 const password = z.string().min(8, "La contrasena debe tener al menos 8 caracteres");
 
@@ -46,5 +46,14 @@ export const createCompanySchema = z.object({
 export const updateCompanyStatusSchema = idParamSchema.extend({
   body: z.object({
     isActive: z.boolean(),
+  }),
+});
+
+export const listLoginTracesSchema = z.object({
+  query: z.object({
+    actorType: z.enum(["BUSINESS_ADMIN", "CREATOR_ADMIN"]).optional(),
+    success: booleanQuery,
+    restaurantSlug: z.string().min(1).max(120).optional(),
+    limit: z.coerce.number().int().min(1).max(200).optional(),
   }),
 });
