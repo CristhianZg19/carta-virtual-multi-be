@@ -4,6 +4,7 @@ import { CreatorAdmin, type ICreatorAdmin } from "../models/creatorAdmin.model";
 import { Restaurant, type IRestaurant } from "../models/restaurant.model";
 import { User } from "../models/user.model";
 import { loginTraceService } from "./loginTrace.service";
+import { securityService } from "./security.service";
 import { AppError } from "../utils/errors";
 import { normalizeRestaurantSlug } from "../utils/restaurant";
 
@@ -43,6 +44,25 @@ interface LoginTraceQuery {
   actorType?: "BUSINESS_ADMIN" | "CREATOR_ADMIN";
   success?: boolean;
   restaurantSlug?: string;
+  limit?: number;
+}
+
+interface SecurityEventsQuery {
+  action?:
+    | "COMMENT_CREATE"
+    | "COMMENT_LIKE"
+    | "DISH_LIKE"
+    | "DISH_RECOMMEND"
+    | "UPLOAD_DISH_IMAGE"
+    | "UPLOAD_RESTAURANT_LOGO";
+  status?: "ALLOWED" | "BLOCKED";
+  restaurantSlug?: string;
+  ip?: string;
+  limit?: number;
+}
+
+interface BlockedIpsQuery {
+  active?: boolean;
   limit?: number;
 }
 
@@ -168,6 +188,30 @@ export const creatorService = {
 
   async listLoginTraces(query: LoginTraceQuery) {
     return loginTraceService.list(query);
+  },
+
+  async listSecurityEvents(query: SecurityEventsQuery) {
+    return securityService.listEvents(query);
+  },
+
+  async listBlockedIps(query: BlockedIpsQuery) {
+    return securityService.listBlockedIps(query);
+  },
+
+  async blockIp(ip: string, reason: string, creatorUsername?: string) {
+    return securityService.blockIp({
+      ip,
+      reason,
+      source: "MANUAL",
+      blockedBy: creatorUsername,
+      blockedUntil: null,
+    });
+  },
+
+  async unblockIp(id: string, creatorUsername?: string) {
+    const blockedIp = await securityService.unblockIp(id, creatorUsername);
+    if (!blockedIp) throw new AppError("IP bloqueada no encontrada", 404);
+    return blockedIp;
   },
 
   async updateCompanyStatus(id: string, isActive: boolean) {

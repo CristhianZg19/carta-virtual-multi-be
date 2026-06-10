@@ -17,6 +17,7 @@ import {
 } from "../controllers/community.controller";
 import { authenticate, authenticateOptional, authorize } from "../middlewares/auth.middleware";
 import { resolveRestaurantScope } from "../middlewares/restaurantScope.middleware";
+import { securityRateLimit } from "../middlewares/security.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import {
   commentLikeSchema,
@@ -32,6 +33,25 @@ import { idParamSchema } from "../validators/common.validator";
 
 export const communityRoutes = Router();
 
+const commentCreateLimit = securityRateLimit({
+  action: "COMMENT_CREATE",
+  scope: "IP_RESTAURANT",
+  max: 5,
+  windowMs: 10 * 60 * 1000,
+  autoBlockAfter: 15,
+  autoBlockMs: 60 * 60 * 1000,
+});
+
+const communityActionLimit = (action: "COMMENT_LIKE" | "DISH_LIKE" | "DISH_RECOMMEND") =>
+  securityRateLimit({
+    action,
+    scope: "IP_RESTAURANT",
+    max: 30,
+    windowMs: 60 * 1000,
+    autoBlockAfter: 90,
+    autoBlockMs: 60 * 60 * 1000,
+  });
+
 communityRoutes.get("/settings", authenticateOptional, resolveRestaurantScope(), getCommunitySettings);
 communityRoutes.get(
   "/comments",
@@ -40,7 +60,13 @@ communityRoutes.get(
   validate(listCommentsSchema),
   listPublicComments,
 );
-communityRoutes.post("/comments", resolveRestaurantScope(), validate(createCommentSchema), createComment);
+communityRoutes.post(
+  "/comments",
+  resolveRestaurantScope(),
+  commentCreateLimit,
+  validate(createCommentSchema),
+  createComment,
+);
 communityRoutes.delete(
   "/comments/:id",
   authenticateOptional,
@@ -52,6 +78,7 @@ communityRoutes.post(
   "/comments/:id/like",
   authenticateOptional,
   resolveRestaurantScope(),
+  communityActionLimit("COMMENT_LIKE"),
   validate(commentLikeSchema),
   toggleCommentLike,
 );
@@ -59,6 +86,7 @@ communityRoutes.post(
   "/dishes/:dishId/like",
   authenticateOptional,
   resolveRestaurantScope(),
+  communityActionLimit("DISH_LIKE"),
   validate(dishActionSchema),
   toggleDishLike,
 );
@@ -66,6 +94,7 @@ communityRoutes.post(
   "/dishes/:dishId/recommend",
   authenticateOptional,
   resolveRestaurantScope(),
+  communityActionLimit("DISH_RECOMMEND"),
   validate(dishActionSchema),
   toggleDishRecommendation,
 );

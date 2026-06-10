@@ -32,6 +32,26 @@ export const listLoginTraces = asyncHandler(async (req, res) => {
   return sendSuccess(res, 200, "Logs de inicio de sesion obtenidos", traces);
 });
 
+export const listSecurityEvents = asyncHandler(async (req, res) => {
+  const events = await creatorService.listSecurityEvents(req.query);
+  return sendSuccess(res, 200, "Eventos de seguridad obtenidos", events);
+});
+
+export const listBlockedIps = asyncHandler(async (req, res) => {
+  const blockedIps = await creatorService.listBlockedIps(req.query);
+  return sendSuccess(res, 200, "IPs bloqueadas obtenidas", blockedIps);
+});
+
+export const blockIp = asyncHandler(async (req, res) => {
+  const blockedIp = await creatorService.blockIp(req.body.ip, req.body.reason, req.creatorAdmin?.username);
+  return sendSuccess(res, 201, "IP bloqueada", blockedIp);
+});
+
+export const unblockIp = asyncHandler(async (req, res) => {
+  const blockedIp = await creatorService.unblockIp(req.params.id, req.creatorAdmin?.username);
+  return sendSuccess(res, 200, "IP desbloqueada", blockedIp);
+});
+
 export const updateCompanyStatus = asyncHandler(async (req, res) => {
   const company = await creatorService.updateCompanyStatus(req.params.id, req.body.isActive);
   return sendSuccess(res, 200, "Estado de empresa actualizado", company);

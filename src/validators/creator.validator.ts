@@ -57,3 +57,38 @@ export const listLoginTracesSchema = z.object({
     limit: z.coerce.number().int().min(1).max(200).optional(),
   }),
 });
+
+export const listSecurityEventsSchema = z.object({
+  query: z.object({
+    action: z
+      .enum([
+        "COMMENT_CREATE",
+        "COMMENT_LIKE",
+        "DISH_LIKE",
+        "DISH_RECOMMEND",
+        "UPLOAD_DISH_IMAGE",
+        "UPLOAD_RESTAURANT_LOGO",
+      ])
+      .optional(),
+    status: z.enum(["ALLOWED", "BLOCKED"]).optional(),
+    restaurantSlug: z.string().min(1).max(120).optional(),
+    ip: z.string().min(3).max(80).optional(),
+    limit: z.coerce.number().int().min(1).max(200).optional(),
+  }),
+});
+
+export const listBlockedIpsSchema = z.object({
+  query: z.object({
+    active: booleanQuery,
+    limit: z.coerce.number().int().min(1).max(200).optional(),
+  }),
+});
+
+export const blockIpSchema = z.object({
+  body: z.object({
+    ip: z.string().min(3).max(80),
+    reason: z.string().max(240).optional().default("Bloqueado desde admin creador"),
+  }),
+});
+
+export const unblockIpSchema = idParamSchema;
