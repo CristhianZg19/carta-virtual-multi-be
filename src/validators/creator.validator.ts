@@ -58,6 +58,8 @@ export const listLoginTracesSchema = z.object({
   }),
 });
 
+export const deleteLoginTraceSchema = idParamSchema;
+
 export const listSecurityEventsSchema = z.object({
   query: z.object({
     action: z

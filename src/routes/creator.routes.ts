@@ -4,6 +4,7 @@ import {
   changeCreatorPassword,
   createCompany,
   creatorLogin,
+  deleteLoginTrace,
   getCreatorMe,
   listBlockedIps,
   listCompanies,
@@ -19,6 +20,7 @@ import {
   createCompanySchema,
   creatorChangePasswordSchema,
   creatorLoginSchema,
+  deleteLoginTraceSchema,
   listBlockedIpsSchema,
   listLoginTracesSchema,
   listSecurityEventsSchema,
@@ -38,6 +40,7 @@ creatorRoutes.put(
 );
 creatorRoutes.get("/companies", authenticateCreator, listCompanies);
 creatorRoutes.get("/login-traces", authenticateCreator, validate(listLoginTracesSchema), listLoginTraces);
+creatorRoutes.delete("/login-traces/:id", authenticateCreator, validate(deleteLoginTraceSchema), deleteLoginTrace);
 creatorRoutes.get("/security/events", authenticateCreator, validate(listSecurityEventsSchema), listSecurityEvents);
 creatorRoutes.get("/security/blocked-ips", authenticateCreator, validate(listBlockedIpsSchema), listBlockedIps);
 creatorRoutes.post("/security/blocked-ips", authenticateCreator, validate(blockIpSchema), blockIp);

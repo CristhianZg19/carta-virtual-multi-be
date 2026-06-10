@@ -1,4 +1,6 @@
+import { isValidObjectId } from "mongoose";
 import { LoginTrace, type ILoginTrace, type LoginTraceActorType } from "../models/loginTrace.model";
+import { AppError } from "../utils/errors";
 import { logger } from "../utils/logger";
 
 interface LoginTracePayload {
@@ -68,5 +70,18 @@ export const loginTraceService = {
 
     const traces = await LoginTrace.find(query).sort({ createdAt: -1 }).limit(limit);
     return traces.map((trace) => serialize(trace));
+  },
+
+  async remove(id: string) {
+    if (!isValidObjectId(id)) {
+      throw new AppError("Log de inicio de sesion invalido", 400);
+    }
+
+    const trace = await LoginTrace.findByIdAndDelete(id);
+    if (!trace) {
+      throw new AppError("Log de inicio de sesion no encontrado", 404);
+    }
+
+    return serialize(trace);
   },
 };

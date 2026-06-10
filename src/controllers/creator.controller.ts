@@ -32,6 +32,11 @@ export const listLoginTraces = asyncHandler(async (req, res) => {
   return sendSuccess(res, 200, "Logs de inicio de sesion obtenidos", traces);
 });
 
+export const deleteLoginTrace = asyncHandler(async (req, res) => {
+  const trace = await creatorService.deleteLoginTrace(req.params.id);
+  return sendSuccess(res, 200, "Log de inicio de sesion eliminado", trace);
+});
+
 export const listSecurityEvents = asyncHandler(async (req, res) => {
   const events = await creatorService.listSecurityEvents(req.query);
   return sendSuccess(res, 200, "Eventos de seguridad obtenidos", events);

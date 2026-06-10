@@ -190,6 +190,10 @@ export const creatorService = {
     return loginTraceService.list(query);
   },
 
+  async deleteLoginTrace(id: string) {
+    return loginTraceService.remove(id);
+  },
+
   async listSecurityEvents(query: SecurityEventsQuery) {
     return securityService.listEvents(query);
   },
